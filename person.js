@@ -62,6 +62,13 @@ const docs = [
 ];
 
 async function AddDocuments() {
+  // for (let i = 0; i < docs.length; i++) {
+  //   await client.index({
+  //     index: "person",
+  //     body: docs[i],
+  //   });
+  // }
+
   for (let i = 0; i < docs.length; i++) {
     await client.index({
       index: "person",
@@ -69,6 +76,8 @@ async function AddDocuments() {
     });
   }
 }
+
+// AddDocuments();
 
 async function getAllDocuments() {
   const res = await client.search({
@@ -163,19 +172,37 @@ async function phraseQuery() {
 
   console.log(res.hits.hits);
 }
-
-async function phraseQuery1() {
+async function matchPhraseQuery() {
   const res = await client.search({
     index: "person",
     query: {
       match_phrase: {
-        name: "Charlie",
+        description: "CTO",
       },
     },
   });
 
   console.log(res.hits.hits);
 }
+
+// matchPhraseQuery();
+
+async function rangeQueryAge() {
+  const res = await client.search({
+    index: "person",
+    query: {
+      range: {
+        age: {
+          gt: 35,
+        },
+      },
+    },
+  });
+
+  console.log(res.hits.hits);
+}
+
+// rangeQueryAge();
 
 async function fuzzyQuery() {
   const res = await client.search({
@@ -193,6 +220,47 @@ async function fuzzyQuery() {
   console.log(res.hits.hits);
 }
 
+async function termQuery() {
+  try {
+    const res = await client.search({
+      index: "person",
+      query: {
+        term: {
+          "description.keyword": "Software Engineer",
+        },
+      },
+    });
+
+    console.log(res.hits.hits);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function getAllDocs() {
+  const res = await client.search({
+    index: "person",
+    query: {
+      match_all: {},
+    },
+  });
+
+  console.log(res.hits.hits);
+}
+
+// getAllDocs();
+
+async function deleteByQuery() {
+  const res = await client.deleteByQuery({
+    index: "person",
+    query: {
+      match_all: {},
+    },
+  });
+
+  console.log(res);
+}
+
 async function wildCardQuery() {
   const res = await client.search({
     index: "person",
@@ -206,29 +274,76 @@ async function wildCardQuery() {
   console.log(res.hits.hits);
 }
 
+// wildCardQuery();
 
-async function getAllDocs(){
-
+async function nextWildcardQuery() {
   const res = await client.search({
     index: "person",
     query: {
-      match_all: {}
-    }
-  })
+      wildcard: {
+        "city.keyword": "San*",
+      },
+    },
+  });
 
   console.log(res.hits.hits);
 }
 
+// nextWildcardQuery();
 
-async function deleteByQuery(){
-
-  const res = await client.deleteByQuery({
+async function matchQuery() {
+  const res = await client.search({
     index: "person",
     query: {
-      match_all: {}
-    }
-  })
+      match: {
+        name: "Alice",
+      },
+    },
+  });
 
-  console.log(res);
-
+  console.log(res.hits.hits);
 }
+
+// matchQuery();
+
+async function prefixQuery() {
+  const res = await client.search({
+    index: "person",
+    query: {
+      prefix: {
+        description: "data",
+      },
+    },
+  });
+
+  console.log(res.hits.hits);
+}
+
+// prefixQuery();
+
+async function combineQuery() {
+  const res = await client.search({
+    index: "person",
+    query: {
+      bool: {
+        should: [
+          {
+            prefix: {
+              city: "new",
+            }
+          },
+          {
+            wildcard: {
+              description: "data*"
+            }
+          }
+        ],
+         minimum_should_match: 1,
+      },
+    },
+  });
+
+  console.log(res.hits.hits);
+}
+
+combineQuery();
